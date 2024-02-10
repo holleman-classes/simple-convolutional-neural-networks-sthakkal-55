@@ -137,58 +137,61 @@ def build_model2():
 
 
 from tensorflow.keras.layers import Input, Conv2D, BatchNormalization, MaxPooling2D, Flatten, Dense, Dropout, Add
-
+import tensorflow as tf
 from tensorflow.keras.layers import Input, Conv2D, BatchNormalization, Dropout, Add, MaxPooling2D, Flatten, Dense
 from tensorflow.keras.models import Model
 def build_model3():
-    input_layer = Input(shape=(32, 32, 3))
+    inputs = layers.Input(shape=(32, 32, 3))
 
-    # Conv 2D: 32 filters, 3x3 kernel, stride=2, "same" padding
-    x = Conv2D(32, (3, 3), strides=(2, 2), padding='same', activation='relu')(input_layer)
-    x = BatchNormalization()(x)
-    x = Dropout(0.2)(x)
+    y = layers.Conv2D(32, (3, 3), strides=(2, 2), padding='same', activation='relu')(inputs)
+    y = layers.BatchNormalization()(y)
+    y = layers.Dropout(0.5)(y)
 
-    # Function to create a convolutional block with residual connection
-    def convolutional_block(x, filters, kernel_size, stride, padding, dropout_rate):
-        # Conv 2D
-        conv1 = Conv2D(filters, kernel_size, strides=stride, padding=padding, activation='relu')(x)
-        conv1 = BatchNormalization()(conv1)
-        conv1 = Dropout(dropout_rate)(conv1)
+    x = layers.Conv2D(64, (3, 3), strides=(2, 2), padding='same', activation='relu')(y)
+    x = layers.BatchNormalization()(x)
+    x = layers.Dropout(0.5)(x)
 
-        # Conv 2D
-        conv2 = Conv2D(filters, kernel_size, strides=(1, 1), padding='same', activation='relu')(conv1)
-        conv2 = BatchNormalization()(conv2)
-        conv2 = Dropout(dropout_rate)(conv2)
+    x = layers.Conv2D(128, (3, 3), strides=(2, 2), padding='same', activation='relu')(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.Dropout(0.5)(x)
 
-        # Skip connection
-        if stride != (1, 1):
-            shortcut = Conv2D(filters, (1, 1), strides=stride, padding='valid')(x)
-        else:
-            shortcut = x
+    y = layers.Conv2D(128, (1, 1), strides=(5, 5), padding='same', activation='relu')(y)
+    y = layers.Add()([x, y])
+    y = layers.Dropout(0.5)(y)
 
-        # Add the skip connection
-        x = Add()([conv2, shortcut])
+    x = layers.Conv2D(128, (3, 3), strides=(2, 2), padding='same', activation='relu')(y)
+    x = layers.BatchNormalization()(x)
+    x = layers.Dropout(0.5)(x)
 
-        return x
+    x = layers.Conv2D(128, (3, 3), strides=(2, 2), padding='same', activation='relu')(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.Dropout(0.5)(x)
 
-    # Two convolutional blocks with residual connections and dropout
-    x = convolutional_block(x, 64, (3, 3), (2, 2), 'same', 0.3)
-    x = convolutional_block(x, 128, (3, 3), (2, 2), 'same', 0.3)
+    y = layers.Add()([x, y])
+    y = layers.Dropout(0.5)(y)
 
-    # Flatten
-    x = Flatten()(x)
+    x = layers.Conv2D(128, (3, 3), padding='same', activation='relu')(y)
+    x = layers.BatchNormalization()(x)
+    x = layers.Dropout(0.5)(x)
 
-    # Dense (Fully Connected), 128 units
-    x = Dense(128, activation='relu')(x)
-    x = BatchNormalization()(x)
-    x = Dropout(0.3)(x)
+    x = layers.Conv2D(128, (3, 3), padding='same', activation='relu')(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.Dropout(0.5)(x)
 
-    # Dense (Fully Connected), 10 units
-    output_layer = Dense(10)(x)
+    y = layers.Add()([x, y])
+    y = layers.Dropout(0.5)(y)
 
-    # Build the model
-    model = Model(inputs=input_layer, outputs=output_layer)
+    x = layers.MaxPooling2D(pool_size=(4, 4))(y)
+    x = layers.Flatten()(x)
+    x = layers.Dense(128, activation='relu')(x)
+    x = layers.BatchNormalization()(x)
+    outputs = layers.Dense(10)(x)
 
+    model = Model(inputs, outputs)
+    model.compile(optimizer='adam',
+                  loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
+                  metrics=['accuracy'])
+    model.summary()
     return model
 
 # In[29]:
@@ -225,6 +228,40 @@ def build_model50k():
     model.summary()
 
     return model
+
+
+# def build_model50k():
+#     model = tf.keras.Sequential([
+#         layers.Conv2D(32, (2, 2), strides=(2, 2), padding='same', input_shape=(32, 32, 3)),
+#         layers.BatchNormalization(),
+#         layers.Activation('relu'),
+
+#         layers.SeparableConv2D(64, kernel_size=(3, 3), activation="relu", strides=(2, 2), padding='same'),
+#         layers.BatchNormalization(),
+#         layers.SeparableConv2D(128, kernel_size=(2, 2), activation="relu", strides=(2, 2), padding='same'),
+#         layers.BatchNormalization(),
+
+#         layers.Dropout(0.2),
+
+#         layers.SeparableConv2D(128, kernel_size=(3, 3), activation="relu", padding='same'),
+#         layers.BatchNormalization(),
+
+#         layers.Dropout(0.2),
+
+#         layers.MaxPooling2D(pool_size=(4, 4), strides=(4, 4), padding='same'),
+
+#         layers.Flatten(),
+
+#         layers.Dense(128, activation='relu'),
+#         layers.Dropout(0.2),
+
+#         layers.Dense(10, activation='softmax')
+#     ])
+
+#     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+#     model.summary()
+#     return model
 
 
 # In[36]:
@@ -668,8 +705,8 @@ print("The predicted class label is:", class_name)
 
 
 model50k = build_model50k()
-
-model50k.save('build_model50k.h5')
+model50k.summary()
+#model50k.save('build_model50k.h5')
 
 img = Image.open("test_image_airplane.ext")
 img = img.resize((32, 32))
