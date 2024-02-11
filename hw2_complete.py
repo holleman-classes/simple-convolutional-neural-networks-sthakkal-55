@@ -1,6 +1,4 @@
 
-
-
 ### Add lines to import modules as needed
 import numpy as np
 from tensorflow import keras
@@ -60,7 +58,7 @@ def build_model1():
     model.add(Conv2D(128, (3, 3), strides=(2, 2), padding='same'))
     model.add(BatchNormalization())
     model.add(Activation('relu'))
- 
+
     # Four more pairs of Conv2D+Batchnorm, with default stride=1
     for _ in range(4):
         model.add(Conv2D(128, (3, 3), padding='same'))
@@ -245,15 +243,15 @@ if __name__ == '__main__':
   ## Build and train model 1
     model1 = build_model1()
     model1.summary()
-    
-   
-    
+
+
+
   # compile and train model 1.
     model1.compile(optimizer=Adam(), loss=SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
-    
+
     # Train the model for 50 epochs
     history = model1.fit(train_images, train_labels, epochs=1, validation_data=(val_images, val_labels))
-    
+
     # Plot the training and validation accuracy
     plt.plot(history.history['accuracy'])
     plt.plot(history.history['val_accuracy'])
@@ -271,18 +269,18 @@ if __name__ == '__main__':
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Val'], loc='upper left')
     plt.show()
-        
+
     # Evaluate the model on the test set
     test_loss, test_acc = model1.evaluate(test_images, test_labels)
     print("\nTest accuracy:", test_acc)
-    
+
   ## Build, compile, and train model 2 (DS Convolutions)
 #     model2 = build_model2()
  ########################################
   ## Build and train model 2
     model2 = build_model2()
     model2.summary()
-  
+
     model2.compile(optimizer=Adam(), loss=SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
 
     history = model2.fit(train_images, train_labels, epochs=1, batch_size=128, validation_data=(val_images, val_labels))
@@ -318,8 +316,8 @@ if __name__ == '__main__':
     # Train the model for 50 epochs
     history = model3.fit(train_images, train_labels, epochs=1, batch_size=128, validation_data=(val_images, val_labels))
 
-    
-    
+
+
 # Plot the training and validation accuracy
     plt.plot(history.history['accuracy'])
     plt.plot(history.history['val_accuracy'])
@@ -342,7 +340,7 @@ if __name__ == '__main__':
     test_loss, test_acc = model3.evaluate(test_images, test_labels, verbose=2)
 
     print('Test accuracy:', test_acc)
-    
+
     model50k = build_model50k()
     model50k.summary()
     model50k.compile(optimizer=Adam(), loss=SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
@@ -383,7 +381,7 @@ model1.save('build_model1.h5')
 
 
 # Load the image and resize it to 32x32 pixels
-img = Image.open("/test_image_airplane.ext")
+img = Image.open("test_image_airplane.ext")
 img = img.resize((32, 32))
 
   # Convert the image to a numpy array
@@ -406,7 +404,7 @@ model2 = build_model2()
 
 model2.save('build_model2.h5')
 
-img = Image.open("/test_image_airplane.ext")
+img = Image.open("test_image_airplane.ext")
 img = img.resize((32, 32))
 
   # Convert the image to a numpy array
@@ -431,7 +429,7 @@ model3 = build_model3()
 
 model3.save('build_model3.h5')
 
-img = Image.open("/test_image_airplane.ext")
+img = Image.open("test_image_airplane.ext")
 img = img.resize((32, 32))
 
   # Convert the image to a numpy array
@@ -456,10 +454,10 @@ print("The predicted class label is:", class_name)
 
 model50k = build_model50k()
 #model50k.summary()
-model50k.save('build_model50k.h5')
+model50k.save('best_model.h5')
 
 #img = Image.open("/test_image_airplane.ext")
-img = Image.open("/test_image_airplane.ext")
+img = Image.open("test_image_airplane.ext")
 img = img.resize((32, 32))
 
   # Convert the image to a numpy array
@@ -467,7 +465,7 @@ x = np.array(img)
 x = x.reshape((1,) + x.shape)  # Add batch dimension
 
   # Load the trained model
-model = keras.models.load_model("build_model50k.h5")
+model = keras.models.load_model("best_model.h5")
 
   # Make a prediction on the image
 pred = model.predict(x)
@@ -479,6 +477,3 @@ class_name = class_names[class_idx]
 
 
 print("The predicted class label is:", class_name)
-  
-
-
